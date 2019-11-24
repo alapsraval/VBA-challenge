@@ -1,11 +1,12 @@
-Sub populate_tickerlist()
+Sub analyze_stocks()
+    '' Declare variables
     Dim ws As Worksheet, i As Long, last_row As Long, result_table_row As Integer
     Dim open_price As Double, close_price As Double, yearly_change As Double, yearly_change_percentage As Double, total_stock_vol As LongLong
     Dim greatest_increase_ticker As String, greatest_increase_percentage As Double, greatest_decrease_ticker As String, greatest_decrease_percentage As Double, greatest_total_ticker As String, greatest_total_volume As LongLong
     
-    ''Loop through Worksheets
+    '' Loop through Worksheets
     For Each ws In Worksheets
-        ''Set Result Table headers
+        '' Set Result Table headers
         ws.Cells(1, 9).Value = "Ticker"
         ws.Cells(1, 10).Value = "Yearly Change"
         ws.Cells(1, 11).Value = "Percentage Change"
@@ -13,10 +14,10 @@ Sub populate_tickerlist()
         ws.Cells(1, 15).Value = "Ticker"
         ws.Cells(1, 16).Value = "Value"
         
-        ''Count number of rows
+        '' Count number of rows
         last_row = ws.Cells(Rows.Count, 1).End(xlUp).Row
         
-        ''Initialize Values
+        '' Initialize Values
         result_table_row = 2
         total_stock_vol = 0
         greatest_increase_ticker = ""
@@ -26,17 +27,17 @@ Sub populate_tickerlist()
         greatest_total_ticker = ""
         greatest_total_volume = 0
         
-        ''Print the First Ticker value
+        '' Print first ticker's value
         ws.Cells(result_table_row, 9).Value = ws.Cells(2, 1).Value
         
-        ''Set Opening Price of the first ticker
+        '' Set first ticker's open price
         open_price = ws.Cells(2, 3).Value
         
-        ''Loop through rows
+        '' Loop through rows
         For i = 2 To last_row
         total_stock_vol = total_stock_vol + ws.Cells(i, 7).Value
             If (ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value) Then
-                '' set close price for the previous ticker and yearly change before open_price gets overridden.
+                '' Set previous ticker's close price and calculate yearly change before overriding open price.
                 close_price = ws.Cells(i, 6).Value
                 yearly_change = close_price - open_price
                 
@@ -59,38 +60,40 @@ Sub populate_tickerlist()
                     greatest_decrease_ticker = ws.Cells(i, 1).Value
                 End If
                 
+                '' Find greatest volume by comparing it with a previous value to find a maximum
                 If total_stock_vol > greatest_total_volume Then
                     greatest_total_volume = total_stock_vol
                     greatest_total_ticker = ws.Cells(i, 1).Value
                 End If
                             
-                '' set calculated values to result table
+                '' Set calculated values to result table
                 ws.Cells(result_table_row, 10).Value = yearly_change
                 ws.Cells(result_table_row, 11).Value = Format(yearly_change_percentage, "0.00%")
                 ws.Cells(result_table_row, 12).Value = total_stock_vol
                 
-                ' set percentage change cell background color to green for positive values and red for negative values
+                '' Set percentage change cell background color to green for positive values and red for negative values
                 If yearly_change > 0 Then
                     ws.Cells(result_table_row, 10).Interior.ColorIndex = 4
                 Else
                     ws.Cells(result_table_row, 10).Interior.ColorIndex = 3
                 End If
                 
-                '' set result_table_row to next row
+                '' Set result_table_row to next row
                 result_table_row = result_table_row + 1
                 
-                '' reset total_stock_vol to next 0 to calculate total for the next ticker
+                '' Reset total_stock_vol to 0 to reuse it for a next ticker
                 total_stock_vol = 0
                 
-                '' print the next ticker value (A, AA, etc.)
+                '' Print next ticker's value (A, AA, etc.)
                 ws.Cells(result_table_row, 9).Value = ws.Cells(i + 1, 1).Value
                 
-                '' set open price for the next ticker
+                '' Set open price for a next ticker
                 open_price = ws.Cells(i + 1, 3).Value
                     
             End If
         Next i
         
+        '' Setting up values after looping through all rows
         ws.Cells(2, 14).Value = "Greatest % Increase"
         ws.Cells(2, 15).Value = greatest_increase_ticker
         ws.Cells(2, 16).Value = Format(greatest_increase_percentage, "0.00%")
